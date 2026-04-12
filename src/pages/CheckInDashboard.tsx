@@ -32,8 +32,8 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
   };
 
   const filteredEntries = entries.filter(e => 
-    e.parentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    e.babyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    e.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    e.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     e.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -47,17 +47,17 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
               onClick={onBack}
               className="flex items-center gap-2 text-accent bg-white px-3 py-1.5 rounded-lg border border-secondary/5 mb-4 hover:bg-accent/5 transition-all text-sm font-medium"
             >
-              <ArrowLeft className="w-4 h-4" /> Back to Waitlist
+              <ArrowLeft className="w-4 h-4" /> Back to RSVP
             </button>
             <h1 className="text-3xl font-serif">Guest Management</h1>
-            <p className="text-secondary/60">Manage check-ins and waitlist entries for the dedication event.</p>
+            <p className="text-secondary/60">Manage responses for The Forever Affair event.</p>
           </div>
           
           <div className="flex bg-white rounded-xl shadow-sm border border-secondary/5 px-4 items-center gap-3 w-full md:w-80">
             <Search className="w-4 h-4 text-secondary/30" />
             <input 
               type="text" 
-              placeholder="Search guests or babies..."
+              placeholder="Search guests..."
               className="bg-transparent border-none outline-none py-3 w-full text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -68,16 +68,16 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-secondary/5">
-            <p className="text-xs font-bold text-secondary/40 uppercase tracking-wider mb-1">Total Waitlist</p>
+            <p className="text-xs font-bold text-secondary/40 uppercase tracking-wider mb-1">Total Responses</p>
             <p className="text-3xl font-serif">{entries.length}</p>
           </div>
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-secondary/5">
-            <p className="text-xs font-bold text-secondary/40 uppercase tracking-wider mb-1">Checked In</p>
-            <p className="text-3xl font-serif text-green-600">{entries.filter(e => e.checkedIn).length}</p>
+            <p className="text-xs font-bold text-secondary/40 uppercase tracking-wider mb-1">Joyfully Accepted</p>
+            <p className="text-3xl font-serif text-green-600">{entries.filter(e => e.attendanceStatus === 'Joyfully Accept').length}</p>
           </div>
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-secondary/5">
-            <p className="text-xs font-bold text-secondary/40 uppercase tracking-wider mb-1">Total Guests Expected</p>
-            <p className="text-3xl font-serif text-accent">{entries.reduce((acc, curr) => acc + curr.expectedGuests, 0)}</p>
+            <p className="text-xs font-bold text-secondary/40 uppercase tracking-wider mb-1">Regretful Declines</p>
+            <p className="text-3xl font-serif text-red-400">{entries.filter(e => e.attendanceStatus === 'Regretfully Decline').length}</p>
           </div>
         </div>
 
@@ -87,10 +87,10 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
             <table className="w-full text-left">
               <thead className="bg-secondary/5 text-secondary/60 text-xs font-bold uppercase tracking-wider">
                 <tr>
-                  <th className="px-6 py-4">Guest Info</th>
-                  <th className="px-6 py-4">Baby Name</th>
-                  <th className="px-6 py-4">Guests</th>
+                  <th className="px-6 py-4">Guest Name</th>
+                  <th className="px-6 py-4">Contact</th>
                   <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Check-in</th>
                   <th className="px-6 py-4">Actions</th>
                 </tr>
               </thead>
@@ -102,17 +102,20 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
                     className={`group transition-colors ${entry.checkedIn ? 'bg-green-50/30' : 'hover:bg-secondary/5'}`}
                   >
                     <td className="px-6 py-4">
-                      <p className="font-semibold">{entry.parentName}</p>
+                      <p className="font-semibold">{entry.firstName} {entry.lastName}</p>
+                    </td>
+                    <td className="px-6 py-4">
                       <p className="text-xs text-secondary/50">{entry.email}</p>
-                      <p className="text-xs text-secondary/50">{entry.phone}</p>
+                      <p className="text-xs text-secondary/50">{entry.phone || 'No phone'}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold">
-                        {entry.babyName}
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        entry.attendanceStatus === 'Joyfully Accept' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-red-100 text-red-700'
+                      }`}>
+                        {entry.attendanceStatus}
                       </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="font-medium">{entry.expectedGuests}</span>
                     </td>
                     <td className="px-6 py-4">
                       <button 

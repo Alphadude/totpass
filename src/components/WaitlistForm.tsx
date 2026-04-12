@@ -2,41 +2,41 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Baby, User, Mail, Phone, Users, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Phone, MessageSquare, CheckCircle2, Heart, XCircle } from 'lucide-react';
 import { storageService } from '../services/storage';
 
 const formSchema = z.object({
-  parentName: z.string().min(2, 'Name must be at least 2 characters'),
+  firstName: z.string().min(2, 'First name is required'),
+  lastName: z.string().min(2, 'Last name is required'),
   email: z.string().email('Invalid email address'),
-  phone: z.string().min(10, 'Invalid phone number'),
-  babyName: z.string().min(2, 'Please enter the baby\'s name'),
-  expectedGuests: z.number().min(1, 'At least 1 guest required').max(20, 'Maximum 20 guests'),
-  notes: z.string().optional(),
+  phone: z.string().optional(),
+  attendanceStatus: z.enum(['Joyfully Accept', 'Regretfully Decline']),
+  messageForCouple: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
-interface WaitlistFormProps {
+interface RSVPFormProps {
   onSuccess: () => void;
 }
 
-export const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
+export const WaitlistForm: React.FC<RSVPFormProps> = ({ onSuccess }) => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      expectedGuests: 1,
-    },
   });
+
+  const attendanceValue = watch('attendanceStatus');
 
   const onSubmit = async (data: FormData) => {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    storageService.addEntry(data);
+    storageService.addEntry(data as any);
     reset();
     onSuccess();
   };
@@ -44,40 +44,40 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Parent Name */}
+        {/* First Name */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-secondary/80 flex items-center gap-2">
-            <User className="w-4 h-4" /> Parent/Guardian Name
+            <User className="w-4 h-4" /> First Name (Required)
           </label>
           <input
-            {...register('parentName')}
+            {...register('firstName')}
             className={`w-full px-4 py-3 rounded-xl border bg-white/50 focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none transition-all ${
-              errors.parentName ? 'border-red-400' : 'border-secondary/10'
+              errors.firstName ? 'border-red-400' : 'border-secondary/10'
             }`}
-            placeholder="John Doe"
+            placeholder="John"
           />
-          {errors.parentName && <p className="text-xs text-red-500">{errors.parentName.message}</p>}
+          {errors.firstName && <p className="text-xs text-red-500">{errors.firstName.message}</p>}
         </div>
 
-        {/* Baby's Name */}
+        {/* Last Name */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-secondary/80 flex items-center gap-2">
-            <Baby className="w-4 h-4" /> Baby's Name
+            <User className="w-4 h-4" /> Last Name (Required)
           </label>
           <input
-            {...register('babyName')}
+            {...register('lastName')}
             className={`w-full px-4 py-3 rounded-xl border bg-white/50 focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none transition-all ${
-              errors.babyName ? 'border-red-400' : 'border-secondary/10'
+              errors.lastName ? 'border-red-400' : 'border-secondary/10'
             }`}
-            placeholder="Little One's Name"
+            placeholder="Doe"
           />
-          {errors.babyName && <p className="text-xs text-red-500">{errors.babyName.message}</p>}
+          {errors.lastName && <p className="text-xs text-red-500">{errors.lastName.message}</p>}
         </div>
 
         {/* Email */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-secondary/80 flex items-center gap-2">
-            <Mail className="w-4 h-4" /> Email Address
+            <Mail className="w-4 h-4" /> Email Address (Required)
           </label>
           <input
             {...register('email')}
@@ -93,46 +93,70 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
         {/* Phone */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-secondary/80 flex items-center gap-2">
-            <Phone className="w-4 h-4" /> Phone Number
+            <Phone className="w-4 h-4" /> Phone Number (Optional)
           </label>
           <input
             {...register('phone')}
             type="tel"
-            className={`w-full px-4 py-3 rounded-xl border bg-white/50 focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none transition-all ${
-              errors.phone ? 'border-red-400' : 'border-secondary/10'
-            }`}
+            className="w-full px-4 py-3 rounded-xl border border-secondary/10 bg-white/50 focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none transition-all"
             placeholder="+1 (555) 000-0000"
           />
-          {errors.phone && <p className="text-xs text-red-500">{errors.phone.message}</p>}
-        </div>
-
-        {/* Expected Guests */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-secondary/80 flex items-center gap-2">
-            <Users className="w-4 h-4" /> Number of Guests
-          </label>
-          <input
-            {...register('expectedGuests', { valueAsNumber: true })}
-            type="number"
-            className={`w-full px-4 py-3 rounded-xl border bg-white/50 focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none transition-all ${
-              errors.expectedGuests ? 'border-red-400' : 'border-secondary/10'
-            }`}
-            min="1"
-          />
-          {errors.expectedGuests && <p className="text-xs text-red-500">{errors.expectedGuests.message}</p>}
         </div>
       </div>
 
-      {/* Notes */}
+      {/* Attendance Status */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-secondary/80 flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4" /> Attendance Status (Required)
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label className={`relative flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+            attendanceValue === 'Joyfully Accept' 
+              ? 'border-accent bg-accent/5 ring-1 ring-accent' 
+              : 'border-secondary/10 hover:border-accent/30'
+          }`}>
+            <input
+              {...register('attendanceStatus')}
+              type="radio"
+              value="Joyfully Accept"
+              className="sr-only"
+            />
+            <Heart className={`w-5 h-5 ${attendanceValue === 'Joyfully Accept' ? 'text-accent fill-accent' : 'text-secondary/30'}`} />
+            <span className={`text-sm font-semibold ${attendanceValue === 'Joyfully Accept' ? 'text-secondary' : 'text-secondary/60'}`}>
+              Joyfully Accept
+            </span>
+          </label>
+
+          <label className={`relative flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+            attendanceValue === 'Regretfully Decline' 
+              ? 'border-red-400 bg-red-50 ring-1 ring-red-400' 
+              : 'border-secondary/10 hover:border-red-400/30'
+          }`}>
+            <input
+              {...register('attendanceStatus')}
+              type="radio"
+              value="Regretfully Decline"
+              className="sr-only"
+            />
+            <XCircle className={`w-5 h-5 ${attendanceValue === 'Regretfully Decline' ? 'text-red-500' : 'text-secondary/30'}`} />
+            <span className={`text-sm font-semibold ${attendanceValue === 'Regretfully Decline' ? 'text-secondary' : 'text-secondary/60'}`}>
+              Regretfully Decline
+            </span>
+          </label>
+        </div>
+        {errors.attendanceStatus && <p className="text-xs text-red-500">{errors.attendanceStatus.message}</p>}
+      </div>
+
+      {/* Message for Couple */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-secondary/80 flex items-center gap-2">
-          <MessageSquare className="w-4 h-4" /> Special Notes / Prayer Requests
+          <MessageSquare className="w-4 h-4" /> Message for the Couple (Optional)
         </label>
         <textarea
-          {...register('notes')}
+          {...register('messageForCouple')}
           rows={3}
           className="w-full px-4 py-3 rounded-xl border border-secondary/10 bg-white/50 focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none transition-all resize-none"
-          placeholder="Anything you'd like us to know..."
+          placeholder="Share your warm wishes..."
         />
       </div>
 
@@ -145,8 +169,8 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ onSuccess }) => {
           <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
         ) : (
           <>
-            Join Waitlist
-            <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            Submit RSVP
+            <Heart className="w-5 h-5 group-hover:scale-110 transition-transform" />
           </>
         )}
       </button>

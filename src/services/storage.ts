@@ -1,11 +1,11 @@
 export interface WaitlistEntry {
   id: string;
-  parentName: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone: string;
-  babyName: string;
-  expectedGuests: number;
-  notes?: string;
+  phone?: string;
+  attendanceStatus: 'Joyfully Accept' | 'Regretfully Decline';
+  messageForCouple?: string;
   timestamp: string;
   checkedIn: boolean;
 }
