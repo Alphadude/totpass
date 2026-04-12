@@ -31,6 +31,10 @@ export const WaitlistPage: React.FC = () => {
             <h1 className="text-6xl md:text-8xl font-serif font-light mb-8 leading-tight tracking-tight">
               Grace & <span className="italic font-medium">Dedication</span>
             </h1>
+            <h2 className="text-2xl md:text-3xl font-serif text-accent mb-8 tracking-wide">
+              {/* Baby's Name */}
+              Rion Chisom Raphael <span className="italic">Nwosu</span>
+            </h2>
             <p className="text-lg md:text-xl text-secondary/70 font-light leading-relaxed mb-12 max-w-lg mx-auto italic">
               We invite you to join us for a special morning as we dedicate our little one to a life of love, faith, and purpose.
             </p>
