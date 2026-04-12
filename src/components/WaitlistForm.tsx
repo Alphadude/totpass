@@ -110,7 +110,7 @@ export const WaitlistForm: React.FC<RSVPFormProps> = ({ onSuccess }) => {
           <CheckCircle2 className="w-3.5 h-3.5" /> Attendance
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <label className={`relative flex items-center gap-3 p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+          <label className={`relative flex flex-col items-center justify-center gap-4 py-12 px-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
             attendanceValue === 'Joyfully Accept' 
               ? 'border-accent bg-accent/5' 
               : 'border-muted/20 hover:border-accent/40'
@@ -121,13 +121,13 @@ export const WaitlistForm: React.FC<RSVPFormProps> = ({ onSuccess }) => {
               value="Joyfully Accept"
               className="sr-only"
             />
-            <Heart className={`w-5 h-5 transition-transform duration-500 ${attendanceValue === 'Joyfully Accept' ? 'text-accent fill-accent scale-110' : 'text-muted/40'}`} />
-            <span className={`text-sm font-bold tracking-tight ${attendanceValue === 'Joyfully Accept' ? 'text-secondary' : 'text-secondary/50'}`}>
+            <Heart className={`w-8 h-8 transition-all duration-500 ${attendanceValue === 'Joyfully Accept' ? 'text-accent fill-accent scale-125' : 'text-muted/40'}`} />
+            <span className={`text-sm font-bold tracking-[0.1em] uppercase ${attendanceValue === 'Joyfully Accept' ? 'text-secondary' : 'text-secondary/50'}`}>
               Joyfully Accept
             </span>
           </label>
 
-          <label className={`relative flex items-center gap-3 p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+          <label className={`relative flex flex-col items-center justify-center gap-4 py-12 px-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
             attendanceValue === 'Regretfully Decline' 
               ? 'border-secondary bg-secondary/5' 
               : 'border-muted/20 hover:border-secondary/30'
@@ -138,8 +138,8 @@ export const WaitlistForm: React.FC<RSVPFormProps> = ({ onSuccess }) => {
               value="Regretfully Decline"
               className="sr-only"
             />
-            <XCircle className={`w-5 h-5 transition-transform duration-500 ${attendanceValue === 'Regretfully Decline' ? 'text-secondary scale-110' : 'text-muted/40'}`} />
-            <span className={`text-sm font-bold tracking-tight ${attendanceValue === 'Regretfully Decline' ? 'text-secondary' : 'text-secondary/50'}`}>
+            <XCircle className={`w-8 h-8 transition-all duration-500 ${attendanceValue === 'Regretfully Decline' ? 'text-secondary scale-125' : 'text-muted/40'}`} />
+            <span className={`text-sm font-bold tracking-[0.1em] uppercase ${attendanceValue === 'Regretfully Decline' ? 'text-secondary' : 'text-secondary/50'}`}>
               Regretfully Decline
             </span>
           </label>
