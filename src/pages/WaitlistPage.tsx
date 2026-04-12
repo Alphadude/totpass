@@ -40,14 +40,14 @@ export const WaitlistPage: React.FC = () => {
                 <div className="w-px h-8 bg-accent/30" />
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-accent/60" /> 
-                  <span>Sunday, June 14, 2026</span>
+                  <span>Sunday, April 26, 2026</span>
                 </div>
               </div>
               <div className="flex flex-col items-center gap-3">
                 <div className="w-px h-8 bg-accent/30" />
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-accent/60" /> 
-                  <span>St. Mary's Chapel, Heritage Hall</span>
+                <div className="flex items-center gap-2 px-4 text-center">
+                  <MapPin className="w-4 h-4 text-accent/60 shrink-0" /> 
+                  <span>Gateway International Church (Altar of Mercy grounds, Ogbogoro Road, Rumuopirikom, Port Harcourt)</span>
                 </div>
               </div>
             </div>
