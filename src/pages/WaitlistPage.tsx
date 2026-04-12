@@ -1,6 +1,6 @@
 import React from 'react';
 import { WaitlistForm } from '../components/WaitlistForm';
-import { Calendar, MapPin, Heart, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Calendar, MapPin, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const WaitlistPage: React.FC = () => {
