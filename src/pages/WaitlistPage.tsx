@@ -1,0 +1,105 @@
+import React from 'react';
+import { WaitlistForm } from '../components/WaitlistForm';
+import { Calendar, MapPin, Heart, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export const WaitlistPage: React.FC = () => {
+  const [isSubmitted, setIsSubmitted] = React.useState(false);
+
+  return (
+    <div className="min-h-screen w-full relative overflow-x-hidden font-sans text-secondary">
+      {/* Hero Background */}
+      <div 
+        className="fixed inset-0 z-0 opacity-40 bg-cover bg-center"
+        style={{ backgroundImage: 'url("/hero-bg.png")' }}
+      />
+      <div className="fixed inset-0 z-0 bg-gradient-to-b from-primary/10 via-primary/60 to-primary" />
+
+      {/* Content */}
+      <main className="relative z-10 container mx-auto px-4 py-20 flex flex-col items-center">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-2xl mb-16"
+        >
+          <span className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-accent font-semibold text-sm tracking-widest uppercase mb-6">
+            Coming Soon
+          </span>
+          <h1 className="text-5xl md:text-7xl font-serif mb-6 leading-tight">
+            A Journey of <span className="italic text-accent">Grace</span> & Dedication
+          </h1>
+          <p className="text-lg text-secondary/70 leading-relaxed mb-8">
+            We invite you to join us for a special morning as we dedicate our little one to a life of love, faith, and purpose.
+          </p>
+          
+          <div className="flex flex-wrap justify-center gap-6 text-sm font-medium">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/50 border border-white/20">
+              <Calendar className="w-4 h-4 text-accent" /> June 14, 2026 • 10:00 AM
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/50 border border-white/20">
+              <MapPin className="w-4 h-4 text-accent" /> St. Mary's Chapel, Heritage Hall
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Form Section */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="w-full max-w-3xl glass-card rounded-3xl p-8 md:p-12"
+        >
+          <AnimatePresence mode="wait">
+            {!isSubmitted ? (
+              <motion.div
+                key="form"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="p-3 bg-secondary/5 rounded-2xl">
+                    <Heart className="w-6 h-6 text-accent fill-accent/20" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-serif">Reserve Your Place</h2>
+                    <p className="text-sm text-secondary/60">Please join the waitlist to receive your formal invitation.</p>
+                  </div>
+                </div>
+                
+                <WaitlistForm onSuccess={() => setIsSubmitted(true)} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-12"
+              >
+                <div className="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
+                  <Heart className="w-10 h-10 fill-current" />
+                </div>
+                <h2 className="text-4xl font-serif mb-4">You're on the list!</h2>
+                <p className="text-secondary/70 max-w-sm mx-auto mb-10 leading-relaxed">
+                  Thank you for your love and support. We've saved your spot and will reach out shortly with further details.
+                </p>
+                <button 
+                  onClick={() => setIsSubmitted(false)}
+                  className="flex items-center gap-2 mx-auto text-accent font-semibold hover:gap-3 transition-all"
+                >
+                  Join for another guest <ArrowRight className="w-4 h-4" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Footer */}
+        <footer className="mt-24 text-center text-sm text-secondary/40 font-medium tracking-wide">
+          &copy; 2026 Grace & Dedication • With Love
+        </footer>
+      </main>
+    </div>
+  );
+};
