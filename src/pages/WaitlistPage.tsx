@@ -28,18 +28,18 @@ export const WaitlistPage: React.FC = () => {
               Kindly Respond
             </span>
             <h1 className="text-5xl md:text-7xl font-serif mb-6 leading-tight">
-              The Forever <span className="italic text-accent">Affair</span>
+              A Journey of <span className="italic text-accent">Grace</span> & Dedication
             </h1>
             <p className="text-lg text-secondary/70 leading-relaxed mb-8">
-              We look forward to celebrating this special day with you. Please let us know if you will be joining us.
+              We invite you to join us for a special morning as we dedicate our little one to a life of love, faith, and purpose.
             </p>
             
             <div className="flex flex-wrap justify-center gap-6 text-sm font-medium">
               <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/50 border border-white/20">
-                <Calendar className="w-4 h-4 text-accent" /> Saturday, June 14, 2026
+                <Calendar className="w-4 h-4 text-accent" /> Sunday, June 14, 2026
               </div>
               <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/50 border border-white/20">
-                <MapPin className="w-4 h-4 text-accent" /> The Regency Grand Ballroom
+                <MapPin className="w-4 h-4 text-accent" /> St. Mary's Chapel, Heritage Hall
               </div>
             </div>
           </motion.div>
@@ -98,7 +98,7 @@ export const WaitlistPage: React.FC = () => {
 
           {/* Footer */}
           <footer className="mt-16 text-center text-sm text-secondary/40 font-medium tracking-wide">
-            &copy; 2026 The Forever Affair • With Love
+            &copy; 2026 Grace & Dedication • With Love
           </footer>
         </div>
       </main>

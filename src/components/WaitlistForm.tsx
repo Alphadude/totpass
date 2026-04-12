@@ -147,16 +147,16 @@ export const WaitlistForm: React.FC<RSVPFormProps> = ({ onSuccess }) => {
         {errors.attendanceStatus && <p className="text-xs text-red-500">{errors.attendanceStatus.message}</p>}
       </div>
 
-      {/* Message for Couple */}
+      {/* Well Wishes */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-secondary/80 flex items-center gap-2">
-          <MessageSquare className="w-4 h-4" /> Message for the Couple (Optional)
+          <MessageSquare className="w-4 h-4" /> Well Wishes for the Child (Optional)
         </label>
         <textarea
           {...register('messageForCouple')}
           rows={3}
           className="w-full px-4 py-3 rounded-xl border border-secondary/10 bg-white/50 focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none transition-all resize-none"
-          placeholder="Share your warm wishes..."
+          placeholder="Share your warm thoughts for the little one..."
         />
       </div>
 

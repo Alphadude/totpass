@@ -47,10 +47,10 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
               onClick={onBack}
               className="flex items-center gap-2 text-accent bg-white px-3 py-1.5 rounded-lg border border-secondary/5 mb-4 hover:bg-accent/5 transition-all text-sm font-medium"
             >
-              <ArrowLeft className="w-4 h-4" /> Back to RSVP
+              <ArrowLeft className="w-4 h-4" /> Back to Invitation
             </button>
             <h1 className="text-3xl font-serif">Guest Management</h1>
-            <p className="text-secondary/60">Manage responses for The Forever Affair event.</p>
+            <p className="text-secondary/60">Manage responses for the Child Dedication event.</p>
           </div>
           
           <div className="flex bg-white rounded-xl shadow-sm border border-secondary/5 px-4 items-center gap-3 w-full md:w-80">
