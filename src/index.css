@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  font-family: Lato, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #FAF9F6; /* Default light cream background */
+  color: rgb(74, 63, 53);
+  background-color: rgb(250, 248, 245);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -19,19 +19,24 @@
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
   min-height: 100vh;
-  color: #4A3F35;
+  box-shadow: inset 0 0 100px rgba(100, 149, 237, 0.12); /* Subtle Blue Glow Frame */
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 @layer base {
   button {
-    @apply transition-all duration-200 active:scale-95;
+    @apply transition-all duration-300 active:scale-[0.98];
   }
 }
 
 .glass-card {
-  @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  @apply bg-white/80 backdrop-blur-sm border border-secondary/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
 }

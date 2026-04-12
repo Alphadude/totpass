@@ -7,14 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#FAF9F6", // Cream
-        secondary: "#4A3F35", // Deep Taupe
-        accent: "#C5A059", // Gold
-        muted: "#F1F0EA", // Soft Sage/Grey
+        primary: "rgb(250, 248, 245)", // Warm Cream
+        secondary: "rgb(74, 63, 53)", // Deep Taupe
+        accent: "rgb(201, 169, 97)",  // Gold
+        muted: "rgb(184, 169, 154)",  // Soft Taupe/Border
+        glow: "rgba(100, 149, 237, 0.15)", // Blue Glow
       },
       fontFamily: {
-        serif: ['"Playfair Display"', "serif"],
-        sans: ["Inter", "sans-serif"],
+        serif: ['"Cormorant Garamond"', "serif"],
+        sans: ["Lato", "sans-serif"],
       },
       borderRadius: {
         '2xl': '1rem',
