@@ -1,6 +1,6 @@
 import React from 'react';
 import { storageService, WaitlistEntry } from '../services/storage';
-import { Search, CheckCircle, Clock, Trash2, ArrowLeft, QrCode, X } from 'lucide-react';
+import { Search, CheckCircle, Clock, Trash2, ArrowLeft, QrCode, X, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 

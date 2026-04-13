@@ -1,6 +1,6 @@
 import React from 'react';
 import { WaitlistForm } from '../components/WaitlistForm';
-import { Calendar, MapPin, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Calendar, MapPin, ArrowRight, CheckCircle2, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { QRCodeSVG } from 'qrcode.react';
