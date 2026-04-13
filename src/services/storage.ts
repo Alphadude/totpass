@@ -77,6 +77,28 @@ export const storageService = {
     };
   },
 
+  addEntriesBulk: async (entries: Omit<WaitlistEntry, 'id' | 'timestamp' | 'checkedIn'>[]): Promise<boolean> => {
+    const records = entries.map(entry => ({
+      first_name: entry.firstName,
+      last_name: entry.lastName,
+      email: entry.email,
+      phone: entry.phone,
+      attendance_status: entry.attendanceStatus,
+      message_for_family: entry.messageForCouple,
+    }));
+
+    const { error } = await supabase
+      .from('rsvps')
+      .insert(records);
+
+    if (error) {
+      console.error('Error adding bulk entries:', error);
+      return false;
+    }
+
+    return true;
+  },
+
   toggleCheckIn: async (id: string, currentStatus: boolean): Promise<boolean> => {
     const { error } = await supabase
       .from('rsvps')

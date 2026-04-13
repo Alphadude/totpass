@@ -1,6 +1,6 @@
 import React from 'react';
 import { storageService, WaitlistEntry, EventSettings } from '../services/storage';
-import { Search, CheckCircle, Clock, Trash2, ArrowLeft, QrCode, X, Settings as SettingsIcon } from 'lucide-react';
+import { Search, CheckCircle, Clock, Trash2, ArrowLeft, QrCode, X, Settings as SettingsIcon, Upload, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toBlob } from 'html-to-image';
 import { InvitationComposer } from '../components/InvitationComposer';
@@ -18,7 +18,9 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
   const [generatingForId, setGeneratingForId] = React.useState<string | null>(null);
   const [settings, setSettings] = React.useState<EventSettings>({qrPosX: 8, qrPosY: 50, qrScale: 100});
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+  const [isBulkSending, setIsBulkSending] = React.useState(false);
   const composerRef = React.useRef<HTMLDivElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const activeEntry = entries.find(e => e.id === generatingForId) || null;
 
   const loadEntries = async () => {
@@ -111,6 +113,113 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+      
+      const lines = text.split('\n').filter(line => line.trim() !== '');
+      if (lines.length < 2) {
+        alert("The CSV file appears to be empty or missing data rows.");
+        return;
+      }
+      
+      const newEntries: Omit<WaitlistEntry, 'id' | 'timestamp' | 'checkedIn'>[] = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const row = lines[i].split(',').map(item => item.trim().replace(/^"|"$/g, ''));
+        const firstName = row[0] || 'Unknown';
+        const lastName = row[1] || '';
+        const email = row[2] || '';
+        const phone = row[3] || '';
+        
+        newEntries.push({
+          firstName,
+          lastName,
+          email,
+          phone,
+          attendanceStatus: 'Joyfully Accept',
+        });
+      }
+
+      if (newEntries.length > 0) {
+        setIsLoading(true);
+        const success = await storageService.addEntriesBulk(newEntries);
+        if (success) {
+          alert(`Successfully imported ${newEntries.length} guests.`);
+          loadEntries();
+        } else {
+          alert('Failed to import guests.');
+          setIsLoading(false);
+        }
+      }
+      
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsText(file);
+  };
+
+  const sendInviteForEntry = (entry: WaitlistEntry): Promise<void> => {
+    return new Promise((resolve) => {
+        setGeneratingForId(entry.id);
+        setTimeout(async () => {
+            if (!composerRef.current) {
+                setGeneratingForId(null);
+                return resolve();
+            }
+            try {
+                const blob = await toBlob(composerRef.current, { quality: 1, cacheBust: true });
+                if (!blob) throw new Error("Failed");
+                
+                const file = new File([blob], `${entry.firstName}-invitation.png`, { type: 'image/png' });
+                const message = `*Special Invitation: Dedication of Rion Chisom Raphael Nwosu*\n\nHello ${entry.firstName},\n\nWe are delighted to have you join us for Rion's dedication service and reception.\n\n*Your Guest Pass ID:* ${entry.id}\n*Date:* Sunday, 26th April 2026\n*Dedication:* Gateway International Church (Altar of Mercy Grounds), 10:00 AM\n*Reception:* WhiteJade Event Centre, Eliozu\n\nPlease find your digital pass attached. See you soon!`;
+                
+                const phone = entry.phone ? entry.phone.replace(/[^0-9]/g, '') : '';
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: "Special Invitation",
+                        text: message
+                    });
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${entry.firstName}-invitation.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+                }
+            } catch (e) {
+                console.error("Failed to generate image.", e);
+                alert("Failed to generate image.");
+            } finally {
+                setGeneratingForId(null);
+                resolve();
+            }
+        }, 500);
+    });
+  };
+
+  const handleBulkSend = async () => {
+    if (filteredEntries.length === 0) return;
+    if (!confirm(`You are about to start sending invites to ${filteredEntries.length} guests sequentially. Proceed?`)) return;
+    
+    setIsBulkSending(true);
+    for (const entry of filteredEntries) {
+        await sendInviteForEntry(entry);
+        const next = confirm(`Invite process triggered for ${entry.firstName}. Click OK to proceed to the next guest, or Cancel to stop bulk sending.`);
+        if (!next) break;
+    }
+    setIsBulkSending(false);
+    alert('Bulk send process finished or stopped.');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30">
@@ -151,6 +260,29 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
           </div>
           
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+            <input 
+              type="file" 
+              accept=".csv" 
+              ref={fileInputRef} 
+              onChange={handleFileUpload} 
+              className="hidden" 
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center justify-center p-3 bg-white border border-secondary/10 text-secondary hover:bg-secondary/5 transition-all rounded-xl shadow-sm tooltip"
+              title="Import CSV"
+            >
+              <Upload className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleBulkSend}
+              disabled={isBulkSending}
+              className={`flex items-center justify-center p-3 border border-secondary/10 text-white transition-all rounded-xl shadow-sm ${isBulkSending ? 'bg-secondary/50' : 'bg-green-500 hover:bg-green-600'}`}
+              title="Bulk Send Invites"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+
             <button
               onClick={() => setIsSettingsOpen(true)}
               className="flex items-center justify-center p-3 bg-white border border-secondary/10 text-secondary hover:bg-secondary/5 transition-all rounded-xl shadow-sm"
@@ -368,51 +500,8 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         <button 
-                          disabled={generatingForId === entry.id}
-                          onClick={() => {
-                            setGeneratingForId(entry.id);
-                            
-                            setTimeout(async () => {
-                                if (!composerRef.current) return;
-                                try {
-                                    const blob = await toBlob(composerRef.current, { quality: 1, cacheBust: true });
-                                    if (!blob) throw new Error("Failed");
-                                    
-                                    const file = new File([blob], `${entry.firstName}-invitation.png`, { type: 'image/png' });
-                                    const message = `*Special Invitation: Dedication of Rion Chisom Raphael Nwosu*\n\n` +
-                                                  `Hello ${entry.firstName},\n\n` +
-                                                  `We are delighted to have you join us for Rion's dedication service and reception.\n\n` +
-                                                  `*Your Guest Pass ID:* ${entry.id}\n` +
-                                                  `*Date:* Sunday, 26th April 2026\n` +
-                                                  `*Dedication:* Gateway International Church (Altar of Mercy Grounds), 10:00 AM\n` +
-                                                  `*Reception:* WhiteJade Event Centre, Eliozu\n\n` +
-                                                  `Please find your digital pass attached. See you soon!`;
-                                    
-                                    const phone = entry.phone ? entry.phone.replace(/[^0-9]/g, '') : '';
-
-                                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                                        await navigator.share({
-                                            files: [file],
-                                            title: "Special Invitation",
-                                            text: message
-                                        });
-                                    } else {
-                                        const url = URL.createObjectURL(blob);
-                                        const a = document.createElement('a');
-                                        a.href = url;
-                                        a.download = `${entry.firstName}-invitation.png`;
-                                        a.click();
-                                        URL.revokeObjectURL(url);
-                                        
-                                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-                                    }
-                                } catch (e) {
-                                    alert("Failed to generate image.");
-                                } finally {
-                                    setGeneratingForId(null);
-                                }
-                            }, 500);
-                          }}
+                          disabled={generatingForId === entry.id || isBulkSending}
+                          onClick={() => sendInviteForEntry(entry)}
                           className="flex items-center justify-center p-3 text-white bg-[#25D366] hover:bg-[#1DA851] rounded-xl shadow-md transition-all shadow-green-500/20 disabled:opacity-50"
                           title="Share Digital Pass to WhatsApp"
                         >
