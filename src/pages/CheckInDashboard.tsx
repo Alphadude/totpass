@@ -26,29 +26,42 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
   }, []);
 
   React.useEffect(() => {
-    let scanner: Html5QrcodeScanner | null = null;
+    let html5QrCode: any = null;
     
     if (isScanning) {
-      scanner = new Html5QrcodeScanner(
-        "qr-reader",
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        /* verbose= */ false
-      );
-      
-      scanner.render((decodedText) => {
-        handleScanSuccess(decodedText);
-        scanner?.clear();
-        setIsScanning(false);
-      }, () => {
-        // Ignore scan errors
-      });
-    }
+      // Delay initialization to allow modal animation to complete
+      const timer = setTimeout(async () => {
+        try {
+          const { Html5Qrcode } = await import('html5-qrcode');
+          html5QrCode = new Html5Qrcode("qr-reader");
+          
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 },
+            },
+            (decodedText: string) => {
+              handleScanSuccess(decodedText);
+              // Auto-close on success
+              setIsScanning(false);
+            },
+            () => {
+              // Ignore scan errors as they happen constantly during searching
+            }
+          );
+        } catch (err) {
+          console.error("Scanner error:", err);
+        }
+      }, 500);
 
-    return () => {
-      if (scanner) {
-        scanner.clear().catch(error => console.error("Failed to clear scanner", error));
-      }
-    };
+      return () => {
+        clearTimeout(timer);
+        if (html5QrCode && html5QrCode.isScanning) {
+          html5QrCode.stop().catch((e: any) => console.error("Stop failed", e));
+        }
+      };
+    }
   }, [isScanning]);
 
   const handleScanSuccess = async (id: string) => {
