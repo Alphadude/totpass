@@ -34,11 +34,18 @@ export const WaitlistForm: React.FC<RSVPFormProps> = ({ onSuccess }) => {
   const attendanceValue = watch('attendanceStatus');
 
   const onSubmit = async (data: FormData) => {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    storageService.addEntry(data as any);
-    reset();
-    onSuccess();
+    try {
+      const result = await storageService.addEntry(data);
+      if (result) {
+        onSuccess();
+        reset();
+      } else {
+        alert('Failed to submit RSVP. Please try again.');
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('An error occurred. Please check your connection and try again.');
+    }
   };
 
   return (

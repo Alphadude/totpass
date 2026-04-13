@@ -10,26 +10,48 @@ interface CheckInDashboardProps {
 export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) => {
   const [entries, setEntries] = React.useState<WaitlistEntry[]>([]);
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  const loadEntries = () => {
-    setEntries(storageService.getEntries());
+  const loadEntries = async () => {
+    setIsLoading(true);
+    const data = await storageService.getEntries();
+    setEntries(data);
+    setIsLoading(false);
   };
 
   React.useEffect(() => {
     loadEntries();
   }, []);
 
-  const handleToggle = (id: string) => {
-    storageService.toggleCheckIn(id);
-    loadEntries();
-  };
+  const handleToggle = async (id: string) => {
+    const entry = entries.find(e => e.id === id);
+    if (!entry) return;
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to remove this entry?')) {
-      storageService.deleteEntry(id);
+    const success = await storageService.toggleCheckIn(id, entry.checkedIn);
+    if (success) {
       loadEntries();
     }
   };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to remove this entry?')) {
+      const success = await storageService.deleteEntry(id);
+      if (success) {
+        loadEntries();
+      }
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-accent/20 border-t-accent rounded-full animate-spin" />
+          <p className="text-secondary/60 font-serif">Connecting to database...</p>
+        </div>
+      </div>
+    );
+  }
 
   const filteredEntries = entries.filter(e => 
     e.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
