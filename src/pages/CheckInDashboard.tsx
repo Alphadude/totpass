@@ -358,6 +358,7 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
           </div>
         </div>
       </div>
+      </div>
     </>
   );
 };
