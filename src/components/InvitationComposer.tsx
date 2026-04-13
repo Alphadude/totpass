@@ -4,10 +4,15 @@ import { WaitlistEntry } from '../services/storage';
 
 interface InvitationComposerProps {
   entry: WaitlistEntry;
+  settings?: { qrPosX: number, qrPosY: number, qrScale: number };
 }
 
 export const InvitationComposer = forwardRef<HTMLDivElement, InvitationComposerProps>(
-  ({ entry }, ref) => {
+  ({ entry, settings }, ref) => {
+    const qrX = settings?.qrPosX ?? 8;
+    const qrY = settings?.qrPosY ?? 50;
+    const qrScale = settings?.qrScale ?? 100;
+
     return (
       <div 
         ref={ref}
@@ -23,8 +28,16 @@ export const InvitationComposer = forwardRef<HTMLDivElement, InvitationComposerP
           onError={(e) => { e.currentTarget.src = "/invitation-bg.jpg"; }}
         />
         
-        {/* QR Code Overlay - Positioned securely on the left side per user request */}
-        <div className="absolute top-1/2 left-[8%] -translate-y-1/2 flex flex-col items-center bg-white/95 p-8 rounded-3xl shadow-2xl backdrop-blur-md border border-[#c9a961]/30">
+        {/* QR Code Overlay - Positioned securely and dynamically based on database settings */}
+        <div 
+          className="absolute flex flex-col items-center bg-white/95 p-8 rounded-3xl shadow-2xl backdrop-blur-md border border-[#c9a961]/30"
+          style={{
+            top: `${qrY}%`,
+            left: `${qrX}%`,
+            transform: `translate(-50%, -50%) scale(${qrScale / 100})`,
+            transformOrigin: 'center center'
+          }}
+        >
            <div className="mb-4 text-center">
              <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-[#c9a961] mb-1">Guest Pass</p>
              <div className="w-8 h-px bg-[#c9a961]/40 mx-auto" />

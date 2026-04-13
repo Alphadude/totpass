@@ -12,6 +12,12 @@ export interface WaitlistEntry {
   checkedIn: boolean;
 }
 
+export interface EventSettings {
+  qrPosX: number;
+  qrPosY: number;
+  qrScale: number;
+}
+
 export const storageService = {
   getEntries: async (): Promise<WaitlistEntry[]> => {
     const { data, error } = await supabase
@@ -96,4 +102,40 @@ export const storageService = {
     }
     return true;
   },
+
+  getSettings: async (): Promise<EventSettings> => {
+    const { data, error } = await supabase
+      .from('event_settings')
+      .select('*')
+      .eq('id', 'default')
+      .single();
+
+    if (error || !data) {
+      // Fallback defaults
+      return { qrPosX: 8, qrPosY: 50, qrScale: 100 };
+    }
+
+    return {
+      qrPosX: Number(data.qr_pos_x),
+      qrPosY: Number(data.qr_pos_y),
+      qrScale: Number(data.qr_scale)
+    };
+  },
+
+  updateSettings: async (settings: EventSettings): Promise<boolean> => {
+    const { error } = await supabase
+      .from('event_settings')
+      .update({
+        qr_pos_x: settings.qrPosX,
+        qr_pos_y: settings.qrPosY,
+        qr_scale: settings.qrScale
+      })
+      .eq('id', 'default');
+      
+    if (error) {
+      console.error('Error saving settings:', error);
+      return false;
+    }
+    return true;
+  }
 };

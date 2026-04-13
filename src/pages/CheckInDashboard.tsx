@@ -1,6 +1,6 @@
 import React from 'react';
-import { storageService, WaitlistEntry } from '../services/storage';
-import { Search, CheckCircle, Clock, Trash2, ArrowLeft, QrCode, X } from 'lucide-react';
+import { storageService, WaitlistEntry, EventSettings } from '../services/storage';
+import { Search, CheckCircle, Clock, Trash2, ArrowLeft, QrCode, X, Settings as SettingsIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toBlob } from 'html-to-image';
 import { InvitationComposer } from '../components/InvitationComposer';
@@ -16,6 +16,8 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
   const [isLoading, setIsLoading] = React.useState(true);
   const [isScanning, setIsScanning] = React.useState(false);
   const [generatingForId, setGeneratingForId] = React.useState<string | null>(null);
+  const [settings, setSettings] = React.useState<EventSettings>({qrPosX: 8, qrPosY: 50, qrScale: 100});
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const composerRef = React.useRef<HTMLDivElement>(null);
   const activeEntry = entries.find(e => e.id === generatingForId) || null;
 
@@ -23,6 +25,8 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
     setIsLoading(true);
     const data = await storageService.getEntries();
     setEntries(data);
+    const loadedSettings = await storageService.getSettings();
+    setSettings(loadedSettings);
     setIsLoading(false);
   };
 
@@ -128,7 +132,7 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
     <>
       {activeEntry && (
         <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
-          <InvitationComposer ref={composerRef} entry={activeEntry} />
+          <InvitationComposer ref={composerRef} entry={activeEntry} settings={settings} />
         </div>
       )}
       <div className="min-h-screen bg-muted/30 p-4 md:p-8 font-sans text-secondary">
@@ -147,6 +151,14 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
           </div>
           
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="flex items-center justify-center p-3 bg-white border border-secondary/10 text-secondary hover:bg-secondary/5 transition-all rounded-xl shadow-sm"
+              title="Settings"
+            >
+              <SettingsIcon className="w-5 h-5" />
+            </button>
+
             <button
               onClick={() => setIsScanning(true)}
               className="flex items-center justify-center gap-2 bg-accent text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-accent/90 transition-all w-full sm:w-auto shadow-lg shadow-accent/20"
@@ -201,6 +213,88 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
                 <p className="mt-8 text-center text-sm text-secondary/50 italic leading-relaxed">
                   Position the guest's digital pass QR code inside the frame to scan.
                 </p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Settings Modal Overlay */}
+        <AnimatePresence>
+          {isSettingsOpen && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 max-h-screen overflow-y-auto"
+            >
+              <div 
+                className="fixed inset-0 bg-secondary/80 backdrop-blur-md" 
+                onClick={() => setIsSettingsOpen(false)}
+              />
+              <motion.div 
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                className="relative bg-white w-full max-w-5xl rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col md:flex-row gap-8 my-auto"
+              >
+                <div className="flex-1 flex flex-col w-full md:w-1/2">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h3 className="text-2xl font-serif">QR Positioning</h3>
+                        <p className="text-sm text-secondary/50 mt-1">Adjust where the QR code appears on your invitation graphic.</p>
+                      </div>
+                      <button 
+                        onClick={() => setIsSettingsOpen(false)}
+                        className="p-2 hover:bg-secondary/5 rounded-full transition-colors md:hidden"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-6">
+                        <div>
+                            <label className="text-sm font-bold text-secondary/60 uppercase tracking-widest block mb-2">Horizontal Position (X: {settings.qrPosX}%)</label>
+                            <input type="range" min="0" max="100" value={settings.qrPosX} onChange={e => setSettings({...settings, qrPosX: parseInt(e.target.value)})} className="w-full accent-accent" />
+                        </div>
+                        <div>
+                            <label className="text-sm font-bold text-secondary/60 uppercase tracking-widest block mb-2">Vertical Position (Y: {settings.qrPosY}%)</label>
+                            <input type="range" min="0" max="100" value={settings.qrPosY} onChange={e => setSettings({...settings, qrPosY: parseInt(e.target.value)})} className="w-full accent-accent" />
+                        </div>
+                        <div>
+                            <label className="text-sm font-bold text-secondary/60 uppercase tracking-widest block mb-2">Scale/Size ({settings.qrScale}%)</label>
+                            <input type="range" min="20" max="200" value={settings.qrScale} onChange={e => setSettings({...settings, qrScale: parseInt(e.target.value)})} className="w-full accent-accent" />
+                        </div>
+                    </div>
+                    
+                    <div className="mt-8 flex gap-4">
+                        <button 
+                            onClick={async () => {
+                                const success = await storageService.updateSettings(settings);
+                                if (success) alert("Settings successfully saved!");
+                                else alert("Error saving settings.");
+                            }}
+                            className="flex-1 bg-accent text-white px-6 py-4 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-accent/90 transition-all shadow-lg shadow-accent/20"
+                        >
+                            Save Settings
+                        </button>
+                        <button 
+                            onClick={() => setIsSettingsOpen(false)}
+                            className="bg-secondary/5 text-secondary/60 px-6 py-4 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-secondary/10 transition-all hidden md:block"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+                
+                {/* Live Preview Wrapper */}
+                <div className="flex-1 bg-secondary/5 rounded-2xl overflow-hidden flex items-center justify-center p-4 w-full md:w-1/2 min-h-[350px]">
+                     <div className="transform scale-[0.35] sm:scale-[0.45] md:scale-[0.45] origin-center shadow-2xl transition-all">
+                        <InvitationComposer 
+                          entry={{id: 'DEMO-1234', firstName: 'John', lastName: 'Doe', email: '', attendanceStatus: 'Joyfully Accept', timestamp: '', checkedIn: false}} 
+                          settings={settings} 
+                        />
+                     </div>
+                </div>
               </motion.div>
             </motion.div>
           )}

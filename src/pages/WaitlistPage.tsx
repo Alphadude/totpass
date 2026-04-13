@@ -4,20 +4,25 @@ import { Calendar, MapPin, ArrowRight, CheckCircle2, MessageSquare } from 'lucid
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { QRCodeSVG } from 'qrcode.react';
-import { WaitlistEntry } from '../services/storage';
+import { WaitlistEntry, EventSettings, storageService } from '../services/storage';
 import { toBlob } from 'html-to-image';
 import { InvitationComposer } from '../components/InvitationComposer';
 
 export const WaitlistPage: React.FC = () => {
   const [submittedEntry, setSubmittedEntry] = React.useState<WaitlistEntry | null>(null);
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [settings, setSettings] = React.useState<EventSettings | undefined>();
   const composerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    storageService.getSettings().then(setSettings);
+  }, []);
 
   return (
     <>
       {submittedEntry && (
         <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
-          <InvitationComposer ref={composerRef} entry={submittedEntry} />
+          <InvitationComposer ref={composerRef} entry={submittedEntry} settings={settings} />
         </div>
       )}
       <div className="min-h-screen w-full relative overflow-x-hidden font-sans text-secondary">
