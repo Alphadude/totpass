@@ -25,38 +25,46 @@ serve(async (req) => {
       },
     })
 
-    const subject = `Invited: RSVP Confirmation for Rion's Dedication`
+    const subject = `Special Invitation: The Dedication of Rion Chisom Raphael Nwosu`
     const content = `
-      <div style="font-family: serif; max-width: 600px; margin: 0 auto; color: #4a3f35; background-color: #faf8f5; padding: 40px; border-radius: 20px;">
-        <div style="text-align: center; margin-bottom: 40px;">
-          <p style="text-transform: uppercase; letter-spacing: 0.3em; font-size: 10px; color: #c9a961; margin-bottom: 20px;">Kindly Respond</p>
-          <h1 style="font-size: 32px; font-weight: normal; margin-bottom: 5px;">Grace & Dedication</h1>
-          <h2 style="font-size: 20px; color: #c9a961; font-weight: normal;">Rion Chisom Raphael Nwosu</h2>
+      <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; color: #333; background-color: #ffffff; padding: 40px; border: 1px solid #e0e0e0; border-radius: 8px; line-height: 1.6;">
+        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #c9a961; padding-bottom: 20px;">
+          <h3 style="text-transform: uppercase; letter-spacing: 0.2em; font-size: 14px; color: #c9a961; margin-bottom: 10px;">Special Invitation</h3>
+          <p style="font-size: 16px; margin: 5px 0;">
+            The Family of <strong>High Chief Engr. Raphael Nwosu & Mrs. Confidence Nwosu</strong><br/>
+            <span style="font-size: 12px; color: #777;">(Founder/ President Of Hench Group Limited)</span>
+          </p>
+          <p style="margin: 15px 0; font-style: italic;">cordially invite you to the Dedication of their Beloved Son</p>
+          <h1 style="font-size: 28px; margin: 10px 0; color: #1a1a1a;">RION CHISOM RAPHAEL NWOSU</h1>
+          <p style="font-weight: bold; font-size: 18px; color: #c9a961;">SUNDAY 26TH APRIL 2026</p>
         </div>
 
-        <p style="font-style: italic; line-height: 1.6; text-align: center; color: #7a6e64;">
-          Thank you for your RSVP, ${record.first_name}. We are truly honored that you'll be joining us to celebrate this special milestone in our child's life.
-        </p>
-        
-        <div style="padding: 30px; border: 1px solid #c9a96144; border-radius: 20px; margin: 30px 0; background-color: #ffffff;">
-          <h3 style="margin-top: 0; font-family: serif; font-weight: normal; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px;">Event Pass</h3>
-          <p style="margin: 15px 0;"><strong>Venue:</strong> Gateway International Church (Altar of Mercy grounds), Port Harcourt</p>
-          <p style="margin: 15px 0;"><strong>Date:</strong> Sunday, April 26, 2026</p>
-          <p style="margin: 15px 0;"><strong>Status:</strong> ${record.attendance_status}</p>
-          
-          <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px dashed #c9a96144;">
-            <p style="font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 2px;">Your Guest ID</p>
-            <p style="font-size: 14px; font-family: monospace; background: #faf8f5; padding: 10px; display: inline-block; border-radius: 5px; color: #c9a961;">${record.id}</p>
-          </div>
+        <div style="margin-bottom: 30px;">
+          <h4 style="color: #c9a961; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px;">Dedication Service</h4>
+          <p style="margin: 5px 0;"><strong>Gateway International Church</strong></p>
+          <p style="margin: 5px 0; font-size: 14px; color: #555;">The Altar of Mercy Grounds</p>
+          <p style="margin: 5px 0; font-size: 14px; color: #555;">Ogbogoro Road Rumuopirikom, Port Harcourt</p>
         </div>
 
-        <p style="text-align: center; font-size: 12px; color: #999; font-style: italic;">
-          Please present this Guest ID or your digital pass on the website for check-in at the door.
-        </p>
+        <div style="margin-bottom: 30px;">
+          <h4 style="color: #c9a961; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px;">Reception</h4>
+          <p style="margin: 5px 0;"><strong>WhiteJade Event Centre</strong></p>
+          <p style="margin: 5px 0; font-size: 14px; color: #555;">GUAke Road After NNPC Filling Station</p>
+          <p style="margin: 5px 0; font-size: 14px; color: #555;">Eliozu, Port Harcourt</p>
+        </div>
 
-        <footer style="margin-top: 40px; text-align: center; font-size: 10px; color: #ccc; text-transform: uppercase; letter-spacing: 3px;">
-          &copy; 2026 Nwosu Family • With Love
-        </footer>
+        <div style="background-color: #fafafa; padding: 20px; border-radius: 10px; border-left: 4px solid #c9a961; margin-bottom: 30px;">
+          <h4 style="margin-top: 0; font-size: 14px;">Digital Guest Pass</h4>
+          <p style="margin: 5px 0; font-size: 14px;">Guest: <strong>${record.first_name} ${record.last_name}</strong></p>
+          <p style="margin: 5px 0; font-size: 14px;">ID: <span style="font-family: monospace; color: #c9a961; font-weight: bold;">${record.id}</span></p>
+          <p style="font-size: 11px; color: #888; margin-top: 10px; font-style: italic;">* Please present this ID at the door for check-in.</p>
+        </div>
+
+        <div style="border-top: 1px solid #eee; padding-top: 20px; font-size: 13px;">
+          <p style="margin: 5px 0;"><strong>RSVP:</strong> Engr. Raphael Nwosu (MR. VIRUS)</p>
+          <p style="margin: 5px 0;"><strong>Tel:</strong> +234 802 218 7846</p>
+          <p style="margin: 20px 0 0 0; font-style: italic; color: #777; text-align: center;">With best compliments From: Family & Friends</p>
+        </div>
       </div>
     `
 

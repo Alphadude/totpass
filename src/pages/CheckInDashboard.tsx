@@ -248,17 +248,40 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button 
-                        onClick={() => handleToggle(entry.id)}
-                        className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold border transition-all ${
-                          entry.checkedIn 
-                            ? 'bg-green-500 border-green-500 text-white' 
-                            : 'bg-white border-secondary/10 text-secondary/60 hover:border-secondary/20'
-                        }`}
-                      >
-                        {entry.checkedIn ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                        {entry.checkedIn ? 'Checked In' : 'Pending'}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleToggle(entry.id)}
+                          className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold border transition-all ${
+                            entry.checkedIn 
+                              ? 'bg-green-500 border-green-500 text-white' 
+                              : 'bg-white border-secondary/10 text-secondary/60 hover:border-secondary/20'
+                          }`}
+                        >
+                          {entry.checkedIn ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                          {entry.checkedIn ? 'Checked In' : 'Pending'}
+                        </button>
+                        
+                        <button 
+                          onClick={() => {
+                            const message = encodeURIComponent(
+                              `*Special Invitation: Dedication of Rion Chisom Raphael Nwosu*\n\n` +
+                              `Hello ${entry.firstName},\n\n` +
+                              `We are delighted to have you join us for Rion's dedication service and reception.\n\n` +
+                              `*Your Guest Pass ID:* ${entry.id}\n` +
+                              `*Date:* Sunday, 26th April 2026\n` +
+                              `*Dedication:* Gateway International Church (Altar of Mercy Grounds), 10:00 AM\n` +
+                              `*Reception:* WhiteJade Event Centre, Eliozu\n\n` +
+                              `Please have this ID ready for check-in at the door. See you soon!`
+                            );
+                            const phone = entry.phone ? entry.phone.replace(/[^0-9]/g, '') : '';
+                            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                          }}
+                          className="p-2 text-[#25D366] hover:bg-green-50 rounded-lg transition-all"
+                          title="Send invitation via WhatsApp"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <button 

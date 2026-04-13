@@ -136,12 +136,31 @@ export const WaitlistPage: React.FC = () => {
                     </p>
                   </div>
 
-                  <button 
-                    onClick={() => setSubmittedEntry(null)}
-                    className="group flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-accent hover:text-secondary transition-colors"
-                  >
-                    Submit for another guest <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  <div className="flex flex-col gap-4 w-full max-w-sm">
+                    <button 
+                      onClick={() => {
+                        const message = encodeURIComponent(
+                          `*Special Invitation: Dedication of Rion Chisom Raphael Nwosu*\n\n` +
+                          `Hi, I just RSVP'd for the dedication!\n\n` +
+                          `*Guest Pass ID:* ${submittedEntry.id}\n` +
+                          `*Date:* Sunday, 26th April 2026\n` +
+                          `*Venue:* Gateway International Church (Altar of Mercy Grounds), Port Harcourt\n\n` +
+                          `See you there!`
+                        );
+                        window.open(`https://wa.me/?text=${message}`, '_blank');
+                      }}
+                      className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-[#128C7E] transition-all shadow-lg shadow-green-500/20"
+                    >
+                      <MessageSquare className="w-5 h-5" /> Save to WhatsApp
+                    </button>
+
+                    <button 
+                      onClick={() => setSubmittedEntry(null)}
+                      className="group flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-accent hover:text-secondary transition-colors py-2"
+                    >
+                      Submit for another guest <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
