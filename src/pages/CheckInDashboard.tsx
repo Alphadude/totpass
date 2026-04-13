@@ -1,7 +1,10 @@
 import React from 'react';
 import { storageService, WaitlistEntry } from '../services/storage';
-import { Search, CheckCircle, Clock, Trash2, ArrowLeft, QrCode, X, MessageSquare } from 'lucide-react';
+import { Search, CheckCircle, Clock, Trash2, ArrowLeft, QrCode, X, MessageSquare, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Html5Qrcode } from 'html5-qrcode';
+import { toBlob } from 'html-to-image';
+import { InvitationComposer } from '../components/InvitationComposer';
 
 
 interface CheckInDashboardProps {
@@ -13,6 +16,9 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
   const [searchTerm, setSearchTerm] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(true);
   const [isScanning, setIsScanning] = React.useState(false);
+  const [generatingForId, setGeneratingForId] = React.useState<string | null>(null);
+  const composerRef = React.useRef<HTMLDivElement>(null);
+  const activeEntry = entries.find(e => e.id === generatingForId) || null;
 
   const loadEntries = async () => {
     setIsLoading(true);
@@ -120,7 +126,13 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
   );
 
   return (
-    <div className="min-h-screen bg-muted/30 p-4 md:p-8 font-sans text-secondary">
+    <>
+      {activeEntry && (
+        <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
+          <InvitationComposer ref={composerRef} entry={activeEntry} />
+        </div>
+      )}
+      <div className="min-h-screen bg-muted/30 p-4 md:p-8 font-sans text-secondary">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -248,48 +260,86 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => handleToggle(entry.id)}
-                          className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold border transition-all ${
-                            entry.checkedIn 
-                              ? 'bg-green-500 border-green-500 text-white' 
-                              : 'bg-white border-secondary/10 text-secondary/60 hover:border-secondary/20'
-                          }`}
-                        >
-                          {entry.checkedIn ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                          {entry.checkedIn ? 'Checked In' : 'Pending'}
-                        </button>
-                        
-                        <button 
-                          onClick={() => {
-                            const message = encodeURIComponent(
-                              `*Special Invitation: Dedication of Rion Chisom Raphael Nwosu*\n\n` +
-                              `Hello ${entry.firstName},\n\n` +
-                              `We are delighted to have you join us for Rion's dedication service and reception.\n\n` +
-                              `*Your Guest Pass ID:* ${entry.id}\n` +
-                              `*Date:* Sunday, 26th April 2026\n` +
-                              `*Dedication:* Gateway International Church (Altar of Mercy Grounds), 10:00 AM\n` +
-                              `*Reception:* WhiteJade Event Centre, Eliozu\n\n` +
-                              `Please have this ID ready for check-in at the door. See you soon!`
-                            );
-                            const phone = entry.phone ? entry.phone.replace(/[^0-9]/g, '') : '';
-                            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-                          }}
-                          className="p-2 text-[#25D366] hover:bg-green-50 rounded-lg transition-all"
-                          title="Send invitation via WhatsApp"
-                        >
-                          <MessageSquare className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <button 
+                        onClick={() => handleToggle(entry.id)}
+                        className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold border transition-all ${
+                          entry.checkedIn 
+                            ? 'bg-green-500 border-green-500 text-white' 
+                            : 'bg-white border-secondary/10 text-secondary/60 hover:border-secondary/20'
+                        }`}
+                      >
+                        {entry.checkedIn ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                        {entry.checkedIn ? 'Checked In' : 'Pending'}
+                      </button>
                     </td>
                     <td className="px-6 py-4">
-                      <button 
-                        onClick={() => handleDelete(entry.id)}
-                        className="p-2 text-secondary/20 hover:text-red-500 transition-colors rounded-lg"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-4">
+                        <button 
+                          disabled={generatingForId === entry.id}
+                          onClick={() => {
+                            setGeneratingForId(entry.id);
+                            
+                            setTimeout(async () => {
+                                if (!composerRef.current) return;
+                                try {
+                                    const blob = await toBlob(composerRef.current, { quality: 1, cacheBust: true });
+                                    if (!blob) throw new Error("Failed");
+                                    
+                                    const file = new File([blob], `${entry.firstName}-invitation.png`, { type: 'image/png' });
+                                    const message = `*Special Invitation: Dedication of Rion Chisom Raphael Nwosu*\n\n` +
+                                                  `Hello ${entry.firstName},\n\n` +
+                                                  `We are delighted to have you join us for Rion's dedication service and reception.\n\n` +
+                                                  `*Your Guest Pass ID:* ${entry.id}\n` +
+                                                  `*Date:* Sunday, 26th April 2026\n` +
+                                                  `*Dedication:* Gateway International Church (Altar of Mercy Grounds), 10:00 AM\n` +
+                                                  `*Reception:* WhiteJade Event Centre, Eliozu\n\n` +
+                                                  `Please find your digital pass attached. See you soon!`;
+                                    
+                                    const phone = entry.phone ? entry.phone.replace(/[^0-9]/g, '') : '';
+
+                                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                        await navigator.share({
+                                            files: [file],
+                                            title: "Special Invitation",
+                                            text: message
+                                        });
+                                    } else {
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `${entry.firstName}-invitation.png`;
+                                        a.click();
+                                        URL.revokeObjectURL(url);
+                                        
+                                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+                                    }
+                                } catch (e) {
+                                    alert("Failed to generate image.");
+                                } finally {
+                                    setGeneratingForId(null);
+                                }
+                            }, 500);
+                          }}
+                          className="flex items-center justify-center p-3 text-white bg-[#25D366] hover:bg-[#1DA851] rounded-xl shadow-md transition-all shadow-green-500/20 disabled:opacity-50"
+                          title="Share Digital Pass to WhatsApp"
+                        >
+                          {generatingForId === entry.id ? (
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                            </svg>
+                          )}
+                        </button>
+
+                        <button 
+                          onClick={() => handleDelete(entry.id)}
+                          className="p-3 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-colors rounded-xl border border-red-100"
+                          title="Delete Response"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
                     </td>
                   </motion.tr>
                 ))}
@@ -308,6 +358,6 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };

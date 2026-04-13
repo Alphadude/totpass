@@ -5,12 +5,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { QRCodeSVG } from 'qrcode.react';
 import { WaitlistEntry } from '../services/storage';
+import { toBlob } from 'html-to-image';
+import { InvitationComposer } from '../components/InvitationComposer';
 
 export const WaitlistPage: React.FC = () => {
   const [submittedEntry, setSubmittedEntry] = React.useState<WaitlistEntry | null>(null);
+  const [isGenerating, setIsGenerating] = React.useState(false);
+  const composerRef = React.useRef<HTMLDivElement>(null);
 
   return (
-    <div className="min-h-screen w-full relative overflow-x-hidden font-sans text-secondary">
+    <>
+      {submittedEntry && (
+        <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
+          <InvitationComposer ref={composerRef} entry={submittedEntry} />
+        </div>
+      )}
+      <div className="min-h-screen w-full relative overflow-x-hidden font-sans text-secondary">
       {/* Hero Background */}
       <div 
         className="fixed inset-0 z-0 opacity-40 bg-cover bg-center"
@@ -138,20 +148,49 @@ export const WaitlistPage: React.FC = () => {
 
                   <div className="flex flex-col gap-4 w-full max-w-sm">
                     <button 
-                      onClick={() => {
-                        const message = encodeURIComponent(
-                          `*Special Invitation: Dedication of Rion Chisom Raphael Nwosu*\n\n` +
-                          `Hi, I just RSVP'd for the dedication!\n\n` +
-                          `*Guest Pass ID:* ${submittedEntry.id}\n` +
-                          `*Date:* Sunday, 26th April 2026\n` +
-                          `*Venue:* Gateway International Church (Altar of Mercy Grounds), Port Harcourt\n\n` +
-                          `See you there!`
-                        );
-                        window.open(`https://wa.me/?text=${message}`, '_blank');
+                      disabled={isGenerating}
+                      onClick={async () => {
+                        if (!composerRef.current || !submittedEntry) return;
+                        
+                        try {
+                            setIsGenerating(true);
+                            const blob = await toBlob(composerRef.current, { quality: 1, cacheBust: true });
+                            if (!blob) throw new Error("Failed to generate image.");
+                            
+                            const file = new File([blob], `${submittedEntry.firstName}-pass.png`, { type: 'image/png' });
+                            const message = `*Special Invitation: Dedication of Rion Chisom Raphael Nwosu*\n\n` +
+                                          `Hi, I just RSVP'd for the dedication!\n\n` +
+                                          `*Guest Pass ID:* ${submittedEntry.id}\n` +
+                                          `*Date:* Sunday, 26th April 2026\n` +
+                                          `*Venue:* Gateway International Church (Altar of Mercy Grounds), Port Harcourt\n\n` +
+                                          `See you there!`;
+
+                            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                await navigator.share({
+                                    files: [file],
+                                    title: 'My Invitation Pass',
+                                    text: message
+                                });
+                            } else {
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `${submittedEntry.firstName}-pass.png`;
+                                a.click();
+                                URL.revokeObjectURL(url);
+                                
+                                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+                            }
+                        } catch(e) {
+                            console.error(e);
+                            alert("Could not generate image. Please try again.");
+                        } finally {
+                            setIsGenerating(false);
+                        }
                       }}
-                      className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-[#128C7E] transition-all shadow-lg shadow-green-500/20"
+                      className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white px-8 py-4 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-[#128C7E] transition-all shadow-lg shadow-green-500/20 disabled:opacity-50"
                     >
-                      <MessageSquare className="w-5 h-5" /> Save to WhatsApp
+                      <MessageSquare className="w-5 h-5" /> {isGenerating ? 'Generating Pass...' : 'Save to WhatsApp'}
                     </button>
 
                     <button 
@@ -173,5 +212,6 @@ export const WaitlistPage: React.FC = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
