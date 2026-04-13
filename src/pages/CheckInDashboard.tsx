@@ -1,7 +1,8 @@
 import React from 'react';
 import { storageService, WaitlistEntry } from '../services/storage';
-import { Search, CheckCircle, Clock, Trash2, ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Search, CheckCircle, Clock, Trash2, ArrowLeft, QrCode, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 interface CheckInDashboardProps {
   onBack: () => void;
@@ -11,6 +12,7 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
   const [entries, setEntries] = React.useState<WaitlistEntry[]>([]);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isScanning, setIsScanning] = React.useState(false);
 
   const loadEntries = async () => {
     setIsLoading(true);
@@ -22,6 +24,51 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
   React.useEffect(() => {
     loadEntries();
   }, []);
+
+  React.useEffect(() => {
+    let scanner: Html5QrcodeScanner | null = null;
+    
+    if (isScanning) {
+      scanner = new Html5QrcodeScanner(
+        "qr-reader",
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        /* verbose= */ false
+      );
+      
+      scanner.render((decodedText) => {
+        handleScanSuccess(decodedText);
+        scanner?.clear();
+        setIsScanning(false);
+      }, () => {
+        // Ignore scan errors
+      });
+    }
+
+    return () => {
+      if (scanner) {
+        scanner.clear().catch(error => console.error("Failed to clear scanner", error));
+      }
+    };
+  }, [isScanning]);
+
+  const handleScanSuccess = async (id: string) => {
+    const entry = entries.find(e => e.id === id);
+    if (!entry) {
+      alert("Guest pass not found in the current list.");
+      return;
+    }
+
+    if (entry.checkedIn) {
+      alert(`${entry.firstName} is already checked in.`);
+      return;
+    }
+
+    const success = await storageService.toggleCheckIn(id, false);
+    if (success) {
+      alert(`Successfully checked in: ${entry.firstName} ${entry.lastName}`);
+      loadEntries();
+    }
+  };
 
   const handleToggle = async (id: string) => {
     const entry = entries.find(e => e.id === id);
@@ -75,17 +122,65 @@ export const CheckInDashboard: React.FC<CheckInDashboardProps> = ({ onBack }) =>
             <p className="text-secondary/60">Manage responses for the Child Dedication event.</p>
           </div>
           
-          <div className="flex bg-white rounded-xl shadow-sm border border-secondary/5 px-4 items-center gap-3 w-full md:w-80">
-            <Search className="w-4 h-4 text-secondary/30" />
-            <input 
-              type="text" 
-              placeholder="Search guests..."
-              className="bg-transparent border-none outline-none py-3 w-full text-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+            <button
+              onClick={() => setIsScanning(true)}
+              className="flex items-center justify-center gap-2 bg-accent text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-accent/90 transition-all w-full sm:w-auto shadow-lg shadow-accent/20"
+            >
+              <QrCode className="w-4 h-4" /> Scan Pass
+            </button>
+            
+            <div className="flex bg-white rounded-xl shadow-sm border border-secondary/5 px-4 items-center gap-3 w-full sm:w-80">
+              <Search className="w-4 h-4 text-secondary/30" />
+              <input 
+                type="text" 
+                placeholder="Search guests..."
+                className="bg-transparent border-none outline-none py-3 w-full text-sm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
         </div>
+
+        {/* QR Scanner Overlay */}
+        <AnimatePresence>
+          {isScanning && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            >
+              <div 
+                className="absolute inset-0 bg-secondary/80 backdrop-blur-md" 
+                onClick={() => setIsScanning(false)}
+              />
+              <motion.div 
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                className="relative bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl overflow-hidden"
+              >
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-2xl font-serif">Scan Guest Pass</h3>
+                  <button 
+                    onClick={() => setIsScanning(false)}
+                    className="p-2 hover:bg-secondary/5 rounded-full transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                
+                <div id="qr-reader" className="w-full overflow-hidden rounded-2xl border-2 border-accent/20" />
+                
+                <p className="mt-8 text-center text-sm text-secondary/50 italic leading-relaxed">
+                  Position the guest's digital pass QR code inside the frame to scan.
+                </p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

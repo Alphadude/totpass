@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { User, Mail, Phone, MessageSquare, CheckCircle2, Heart, XCircle } from 'lucide-react';
-import { storageService } from '../services/storage';
+import { storageService, WaitlistEntry } from '../services/storage';
 
 const formSchema = z.object({
   firstName: z.string().min(2, 'First name is required'),
@@ -17,7 +17,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 interface RSVPFormProps {
-  onSuccess: () => void;
+  onSuccess: (entry: WaitlistEntry) => void;
 }
 
 export const WaitlistForm: React.FC<RSVPFormProps> = ({ onSuccess }) => {
@@ -37,7 +37,7 @@ export const WaitlistForm: React.FC<RSVPFormProps> = ({ onSuccess }) => {
     try {
       const result = await storageService.addEntry(data);
       if (result) {
-        onSuccess();
+        onSuccess(result);
         reset();
       } else {
         alert('Failed to submit RSVP. Please try again.');
