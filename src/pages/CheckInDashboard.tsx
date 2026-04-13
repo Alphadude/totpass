@@ -2,7 +2,7 @@ import React from 'react';
 import { storageService, WaitlistEntry } from '../services/storage';
 import { Search, CheckCircle, Clock, Trash2, ArrowLeft, QrCode, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Html5Qrcode } from 'html5-qrcode';
+
 
 interface CheckInDashboardProps {
   onBack: () => void;
